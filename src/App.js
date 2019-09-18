@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import './App.css';
-import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 moment.locale('en-gb', {
@@ -18,61 +16,90 @@ let formats = {
 }
 
 const localizer = momentLocalizer(moment);
-const DnDCalendar = withDragAndDrop(Calendar);
 
 class App extends Component {
-  state = {
-    events: [
+  constructor(props) {
+    super(props);
+    this.state = {
+      events: [
+      ]
+    }
+    this.eventStyleGetter = this.eventStyleGetter.bind(this);
+
+  }
+
+  onSelectEvent = ({ start, end, id }) => {
+    let index = this.state.events.findIndex(event => event.id === id);
+    alert(`${JSON.stringify(this.state.events[index])}`);
+  }
+
+  onSelectSlot = ({ start, end }) => {
+    let startDate = document.getElementById("startDate");
+    let endDate = document.getElementById("endDate");
+
+    startDate.value = moment(start).format("L HH:mm:ss");
+    endDate.value = moment(end).add(23.9999, 'hours').format("L HH:mm:ss");
+  }
+
+  saveEvent = () => {
+    let startDate = moment(document.getElementById("startDate").value).format("L HH:mm:ss");
+    let endDate = moment(document.getElementById("endDate").value).format("L HH:mm:ss");
+    let title = document.getElementById("title").value;
+    let hexColor = document.getElementById("hexColor").value;
+
+    this.setState({
+      events: [...this.state.events,
       {
-        start: new Date(),
-        end: new Date(moment().add(1, "days")),
-        title: "Some title"
-      },
-      {
-        start: new Date(),
-        end: new Date(moment().add(2, "days")),
-        title: "Some titles"
+        id: new Date(),
+        start: startDate,
+        end: endDate,
+        title: title,
+        hexColor: hexColor
       }
-    ]
-  };
-
-  onEventResize = ({ start, end }) => {
-    console.log(this.state.events[1].start);
-    this.setState(state => {
-      state.events[1].start = start;
-      state.events[1].end = end;
-      return { events: state.events };
+      ]
     });
-  };
 
-  onEventDrop = ({ event, start, end, allDay }) => {
-    console.log(this.state.events[1].end);
-  };
+  }
 
-  onSelectEvent = ({ event, start, end, allDay }) => {
-    console.log(`Start: ${start}
-End: ${end}`);
+  eventStyleGetter = ({ hexColor }) => {
+    var backgroundColor = '#' + hexColor;
+    var style = {
+        backgroundColor: backgroundColor,
+        color: 'black',
+        fontSize: '25px'
+    };
+    return {
+        style: style
+    };
   }
 
   render() {
     return (
       <div className="App">
         <header className="header">
-
+          <form>
+            <label>Title: <input type="text" id="title"></input></label>
+            <label>Start: <input type="text" id="startDate" readOnly></input></label>
+            <label>End: <input type="text" id="endDate" readOnly></input></label>
+            <label>Hex Color: <input type="text" id="hexColor"></input></label>
+            <input type="button" value="Save" onClick={this.saveEvent} />
+          </form>
         </header>
 
         <main className="main">
-        <DnDCalendar
-          defaultDate={new Date()}
-          defaultView="month"
-          events={this.state.events}
-          localizer={localizer}
-          onEventDrop={this.onEventDrop}
-          onEventResize={this.onEventResize}
-          onDoubleClickEvent={this.onSelectEvent}
-          resizable
-          formats={formats}
-        />
+          <Calendar
+            defaultDate={new Date()}
+            defaultView="month"
+            events={this.state.events}
+            localizer={localizer}
+            views={['month']}
+            onSelectEvent={this.onSelectEvent}
+            resizable
+            selectable
+            onSelectSlot={this.onSelectSlot}
+            formats={formats}
+            eventPropGetter={(this.eventStyleGetter)}
+          />
         </main>
 
         <div className="side">

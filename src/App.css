@@ -4,7 +4,7 @@ body {
 	height: 100vh;
 	box-sizing: border-box;
 	margin: 0;
-	padding: 0;
+  padding: 0;
 }
 
 .App {
@@ -21,7 +21,10 @@ body {
 
 .header {
   grid-area: header;
-  outline: solid;
+  border: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: #172efc;
 }
 
 .main {
@@ -30,5 +33,12 @@ body {
 
 .side {
   grid-area: side;
-  outline: solid;
+  border: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: #172efc;
+}
+
+label { /* TEMP */
+  color: white;
 }
