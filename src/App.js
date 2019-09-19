@@ -4,6 +4,10 @@ import moment from 'moment';
 import './App.css';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
+/**
+ * Sets the locale of our Calendar to en-GB and then makes sure 
+ * our calendar starts each week with Monday rather than Sunday
+ */
 moment.locale('en-gb', {
   week: {
     dow: 1,
@@ -11,21 +15,27 @@ moment.locale('en-gb', {
   },
 });
 
-let formats = {
-  dateFormat: 'DD'
-}
-
 const localizer = momentLocalizer(moment);
 
 class App extends Component {
   constructor(props) {
     super(props);
+
+    /**
+     * The state holds an array of our event objects which look something like:
+        {
+         id:"2019-09-19T09:01:59.402Z",
+         start:"09/02/2019 00:00:00",
+         end:"09/08/2019 23:59:59",
+         title:"Test",
+         hexColor:"40f5d7"
+        }
+     */
     this.state = {
       events: [
       ]
     }
-    this.eventStyleGetter = this.eventStyleGetter.bind(this);
-
+    this.getActive = this.getActive.bind(this);
   }
 
   onSelectEvent = ({ start, end, id }) => {
@@ -57,20 +67,28 @@ class App extends Component {
         hexColor: hexColor
       }
       ]
-    });
-
+    }, this.getActive);
   }
-
+  
+  /**
+   * 'eventStyleGetter' is how we style each of our individual events on the calendar
+   * the 'hexColor' is taken from the event and added to a style object which is then returned to the Calendar component.
+   */
   eventStyleGetter = ({ hexColor }) => {
     var backgroundColor = '#' + hexColor;
     var style = {
-        backgroundColor: backgroundColor,
-        color: 'black',
-        fontSize: '25px'
+      backgroundColor: backgroundColor,
+      color: 'black',
+      fontSize: '25px'
     };
     return {
-        style: style
+      style: style
     };
+  }
+
+  getActive = () => {
+    let active = this.state.events.filter(event => event.title === "test");
+    console.log(JSON.stringify(active));
   }
 
   render() {
@@ -97,7 +115,6 @@ class App extends Component {
             resizable
             selectable
             onSelectSlot={this.onSelectSlot}
-            formats={formats}
             eventPropGetter={(this.eventStyleGetter)}
           />
         </main>
