@@ -86,8 +86,16 @@ class App extends Component {
     };
   }
 
+
   getActive = () => {
-    let active = this.state.events.filter(event => event.title === "test");
+    let active = this.state.events.filter(event => {
+      let today = moment(new Date()).format("L HH:mm:ss");
+      if (today > event.start && today < event.end) {
+        return event;
+      } else {
+        return false;
+      }
+    });
     console.log(JSON.stringify(active));
   }
 
