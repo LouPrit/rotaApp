@@ -5,6 +5,7 @@ body {
 	box-sizing: border-box;
 	margin: 0;
   padding: 0;
+  z-index: -1;
 }
 
 .App {
@@ -21,10 +22,12 @@ body {
 
 .header {
   grid-area: header;
+  display: flex;
   border: solid;
   border-width: 1px;
   border-radius: 10px;
-  background-color: #172efc;
+  justify-content: center;
+  align-items: center;
 }
 
 .main {
@@ -32,13 +35,46 @@ body {
 }
 
 .side {
+  display: flex;
+  flex-direction: column;
   grid-area: side;
   border: solid;
   border-width: 1px;
   border-radius: 10px;
-  background-color: #172efc;
+  align-items: center;
 }
 
-label { /* TEMP */
+.addEventButton {
+  background-color: #555;
   color: white;
+  width: 90%;
+  height: 10%;
+  margin-top: 5px;
+  border-radius: 7px;
+  cursor: pointer;
+  opacity: 0.8;
+  white-space: normal;
+}
+
+.popupForm {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 500px;
+  height: 200px;
+  top: 50%;
+  left: 50%;
+  margin-top: -100px; 
+  margin-left: -250px; 
+  border: 3px solid;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  background-color: white;
+  display: none;
+}
+
+input {
+  width: 300px;
+  margin: 2px;
 }

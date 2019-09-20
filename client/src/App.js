@@ -17,6 +17,8 @@ moment.locale('en-gb', {
 
 const localizer = momentLocalizer(moment);
 
+const teams = ['Team 1', 'Team 2', 'Team 3'];
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -49,6 +51,7 @@ class App extends Component {
 
     startDate.value = moment(start).format("L HH:mm:ss");
     endDate.value = moment(end).add(23.9999, 'hours').format("L HH:mm:ss");
+    document.getElementById("eventForm").style.display = "flex";
   }
 
   saveEvent = () => {
@@ -67,9 +70,12 @@ class App extends Component {
         hexColor: hexColor
       }
       ]
-    }, this.getActive);
+    }, );
+    document.getElementById("eventForm").style.display = "none";
+    document.getElementById("startDate").value = "";
+    document.getElementById("endDate").value = "";
   }
-  
+
   /**
    * 'eventStyleGetter' is how we style each of our individual events on the calendar
    * the 'hexColor' is taken from the event and added to a style object which is then returned to the Calendar component.
@@ -86,7 +92,6 @@ class App extends Component {
     };
   }
 
-
   getActive = () => {
     let active = this.state.events.filter(event => {
       let today = moment(new Date()).format("L HH:mm:ss");
@@ -99,20 +104,39 @@ class App extends Component {
     console.log(JSON.stringify(active));
   }
 
+  openForm = () => {
+    document.getElementById("eventForm").style.display = "flex";
+  }
+
+  setDate = () => {
+    if(document.getElementById("startDate").value === "") {
+      document.getElementById("eventForm").style.display = "none";
+    }
+  }
+
+  closeForm = () => {
+    document.getElementById("eventForm").style.display = "none";
+  }
+
   render() {
     return (
       <div className="App">
         <header className="header">
-          <form>
-            <label>Title: <input type="text" id="title"></input></label>
-            <label>Start: <input type="text" id="startDate" readOnly></input></label>
-            <label>End: <input type="text" id="endDate" readOnly></input></label>
-            <label>Hex Color: <input type="text" id="hexColor"></input></label>
-            <input type="button" value="Save" onClick={this.saveEvent} />
-          </form>
+            <div className="teamSelector">
+            <TeamMenu />
+            <input type="button" value="Get Rota" />
+            </div>
         </header>
 
         <main className="main">
+          <form className="popupForm" id="eventForm">
+            <label>Engineer: <input type="text" id="title"></input></label>
+            <label>Start Date: <input type="text" id="startDate" onClick={this.setDate}></input></label>
+            <label>End Date: <input type="text" id="endDate"></input></label>
+            <label>Color: <input type="text" id="hexColor"></input></label>
+            <input type="button" value="Save" onClick={this.saveEvent} />
+            <input type="button" value="Close" onClick={this.closeForm} />
+          </form>
           <Calendar
             defaultDate={new Date()}
             defaultView="month"
@@ -120,7 +144,6 @@ class App extends Component {
             localizer={localizer}
             views={['month']}
             onSelectEvent={this.onSelectEvent}
-            resizable
             selectable
             onSelectSlot={this.onSelectSlot}
             eventPropGetter={(this.eventStyleGetter)}
@@ -128,12 +151,22 @@ class App extends Component {
         </main>
 
         <div className="side">
-
+          <input type="button" value="Add Entry to Calendar" className="addEventButton" onClick={this.openForm} />
+          <input type="button" value="Add Engineer to Team" className="addEventButton" />
         </div>
 
       </div>
     );
   }
+}
+
+function TeamMenu() {
+  return(
+    <select>
+      <option value="" selected disabled hidden>Choose team</option>
+      {teams.map(team => <option value={team}>{team}</option>)}
+    </select>
+  );
 }
 
 export default App;
