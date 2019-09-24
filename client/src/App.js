@@ -19,6 +19,8 @@ const localizer = momentLocalizer(moment);
 
 const teams = ['Team 1', 'Team 2', 'Team 3'];
 
+let editIndex; //A value is assigned to this when a user clicks an event, we then use this value to know which event the user wants to edit 
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -40,18 +42,32 @@ class App extends Component {
     this.getActive = this.getActive.bind(this);
   }
 
+  /**
+   * This is fired when a user clicks on an event in the calendar, it finds the index of the event the user clicked
+   * inside the state 'events' array and assigns it to 'editIndex' variable for future use.
+   * It then displays the start / end date of the event the user clicked inside the input fields of the edit event form.
+   */
   onSelectEvent = ({ start, end, id }) => {
-    let index = this.state.events.findIndex(event => event.id === id);
-    alert(`${JSON.stringify(this.state.events[index])}`);
+    editIndex = this.state.events.findIndex(event => event.id === id); //This is so we can edit the correct event inside the state 'events' array 
+    document.getElementById("editStartDate").value = start;
+    document.getElementById("editEndDate").value = end;
+
+    document.getElementById("editEventForm").style.display = "flex";
   }
 
+  /**
+   * This is fired when a user selects a date range by dragging the mouse across the calendar,
+   * it will populate the 'event form' with the date range the user selected.
+   */
   onSelectSlot = ({ start, end }) => {
-    let startDate = document.getElementById("startDate");
-    let endDate = document.getElementById("endDate");
+    if (document.getElementById("title").value !== "") { //Prevents the 'add event' form from displaying if no 'name' has been typed into form
+      let startDate = document.getElementById("startDate");
+      let endDate = document.getElementById("endDate");
 
-    startDate.value = moment(start).format("L HH:mm:ss");
-    endDate.value = moment(end).add(23.9999, 'hours').format("L HH:mm:ss");
-    document.getElementById("eventForm").style.display = "flex";
+      startDate.value = moment(start).format("L HH:mm:ss");
+      endDate.value = moment(end).add(23.9999, 'hours').format("L HH:mm:ss");
+      document.getElementById("eventForm").style.display = "flex";
+    }
   }
 
   saveEvent = () => {
@@ -70,10 +86,31 @@ class App extends Component {
         hexColor: hexColor
       }
       ]
-    }, );
+    });
     document.getElementById("eventForm").style.display = "none";
     document.getElementById("startDate").value = "";
     document.getElementById("endDate").value = "";
+  }
+
+  editEvent = () => {
+    let stateEventsCopy = [...this.state.events];
+    stateEventsCopy[editIndex].start = document.getElementById("editStartDate").value
+    stateEventsCopy[editIndex].end = document.getElementById("editEndDate").value
+
+    this.setState({
+      events: stateEventsCopy
+    });
+    document.getElementById("editEventForm").style.display = "none";
+  }
+
+  deleteEvent = () => {
+    let stateEventsCopy = [...this.state.events];
+    stateEventsCopy.splice(editIndex, 1);
+
+    this.setState({
+      events: stateEventsCopy
+    });
+    document.getElementById("editEventForm").style.display = "none";
   }
 
   /**
@@ -109,32 +146,48 @@ class App extends Component {
   }
 
   setDate = () => {
-    if(document.getElementById("startDate").value === "") {
+    if (document.getElementById("startDate").value === "") {
       document.getElementById("eventForm").style.display = "none";
     }
   }
 
   closeForm = () => {
     document.getElementById("eventForm").style.display = "none";
+    document.getElementById("editEventForm").style.display = "none";
   }
 
   render() {
     return (
       <div className="App">
         <header className="header">
-            <div className="teamSelector">
+          <div className="teamSelector">
             <TeamMenu />
             <input type="button" value="Get Rota" />
-            </div>
+          </div>
         </header>
 
         <main className="main">
           <form className="popupForm" id="eventForm">
-            <label>Engineer: <input type="text" id="title"></input></label>
-            <label>Start Date: <input type="text" id="startDate" onClick={this.setDate}></input></label>
-            <label>End Date: <input type="text" id="endDate"></input></label>
-            <label>Color: <input type="text" id="hexColor"></input></label>
+            <h2>Add Entry</h2>
+            <label>Name</label>
+            <input type="text" id="title"></input>
+            <label>Start Date</label>
+            <input type="text" id="startDate" onClick={this.setDate}></input>
+            <label>End Date</label>
+            <input type="text" id="endDate"></input>
+            <label>Color</label>
+            <input type="text" id="hexColor"></input>
             <input type="button" value="Save" onClick={this.saveEvent} />
+            <input type="button" value="Close" onClick={this.closeForm} />
+          </form>
+          <form className="popupForm" id="editEventForm">
+            <h2>Edit Entry</h2>
+            <label>Start Date</label>
+            <input type="text" id="editStartDate"></input>
+            <label>End Date</label>
+            <input type="text" id="editEndDate"></input>
+            <input type="button" value="Save" onClick={this.editEvent} />
+            <input type="button" value="Delete" onClick={this.deleteEvent} />
             <input type="button" value="Close" onClick={this.closeForm} />
           </form>
           <Calendar
@@ -161,10 +214,10 @@ class App extends Component {
 }
 
 function TeamMenu() {
-  return(
+  return (
     <select>
-      <option value="" selected disabled hidden>Choose team</option>
-      {teams.map(team => <option value={team}>{team}</option>)}
+      <option value="" defaultValue hidden>Choose team</option>
+      {teams.map((team, index) => <option key={index} value={team}>{team}</option>)}
     </select>
   );
 }
