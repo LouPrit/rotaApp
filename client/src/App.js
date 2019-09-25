@@ -19,6 +19,27 @@ const localizer = momentLocalizer(moment);
 
 const teams = ['Team 1', 'Team 2', 'Team 3'];
 
+let engineers = [
+  {
+    name: "Louis Pritchard",
+    team: "Team 1",
+    telNum: "07777777777",
+    colour: "ebd534"
+  },
+  {
+    name: "Mike Baker",
+    team: "Team 11",
+    telNum: "07777777777",
+    colour: "48c920"
+  },
+  {
+    name: "Richard Fry",
+    team: "Team 1",
+    telNum: "07777777777",
+    colour: "29b6d6"
+  }
+];
+
 let editIndex; //A value is assigned to this when a user clicks an event, we then use this value to know which event the user wants to edit 
 
 class App extends Component {
@@ -70,18 +91,17 @@ class App extends Component {
     }
   }
 
-  saveEvent = () => {
-    let startDate = moment(document.getElementById("startDate").value).format("L HH:mm:ss");
-    let endDate = moment(document.getElementById("endDate").value).format("L HH:mm:ss");
+  saveEvent = (e) => {
+    e.preventDefault();
     let title = document.getElementById("title").value;
-    let hexColor = document.getElementById("hexColor").value;
+    let hexColor = engineers[engineers.findIndex(engineer => engineer.name === title)].colour;
 
     this.setState({
       events: [...this.state.events,
       {
         id: new Date(),
-        start: startDate,
-        end: endDate,
+        start: moment(document.getElementById("startDate").value).format("L HH:mm:ss"),
+        end: moment(document.getElementById("endDate").value).format("L HH:mm:ss"),
         title: title,
         hexColor: hexColor
       }
@@ -167,17 +187,16 @@ class App extends Component {
         </header>
 
         <main className="main">
-          <form className="popupForm" id="eventForm">
+          <form className="popupForm" id="eventForm" onSubmit={this.saveEvent}>
             <h2>Add Entry</h2>
             <label>Name</label>
-            <input type="text" id="title"></input>
+            <EngineerMenu />
             <label>Start Date</label>
-            <input type="text" id="startDate" onClick={this.setDate}></input>
+            <input type="text" id="startDate" onClick={this.setDate} required></input>
+            <p className="inputInfo">Click above and then use mouse to drag select date range</p>
             <label>End Date</label>
-            <input type="text" id="endDate"></input>
-            <label>Color</label>
-            <input type="text" id="hexColor"></input>
-            <input type="button" value="Save" onClick={this.saveEvent} />
+            <input type="text" id="endDate" required></input>
+            <button type="submit">Save</button>
             <input type="button" value="Close" onClick={this.closeForm} />
           </form>
           <form className="popupForm" id="editEventForm">
@@ -215,9 +234,18 @@ class App extends Component {
 
 function TeamMenu() {
   return (
-    <select>
+    <select id="teamSelection">
       <option value="" defaultValue hidden>Choose team</option>
       {teams.map((team, index) => <option key={index} value={team}>{team}</option>)}
+    </select>
+  );
+}
+
+function EngineerMenu() {
+  return (
+    <select id="title">
+      <option value="" defaultValue hidden>Choose engineer</option>
+      {engineers.map((item, index) => <option key={index} value={item.name}>{item.name}</option>)}
     </select>
   );
 }
