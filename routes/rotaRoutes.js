@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const statsController = require('../controllers/rotaController');
+const rotaController = require('../controllers/rotaController');
 
 /**
- * Handles GET requests to /rota/ for stats retreival - PROTECTED ROUTE
+ * Handles GET requests to /rota/ 
  */
-router.get("/", statsController.getActive);
+router.get("/", rotaController.getActive);
 
 module.exports = router;

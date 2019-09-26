@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
+import axios from 'axios';
 import './App.css';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
@@ -17,7 +18,10 @@ moment.locale('en-gb', {
 
 const localizer = momentLocalizer(moment);
 
-const teams = ['Team 1', 'Team 2', 'Team 3'];
+const teams = [{
+  teamName: 'Team 1',
+  teamNum: '07777777777'
+}];
 
 let engineers = [
   {
@@ -57,6 +61,7 @@ class App extends Component {
         }
      */
     this.state = {
+      teamName: "Team 1",
       events: [
       ]
     }
@@ -93,15 +98,15 @@ class App extends Component {
 
   saveEvent = (e) => {
     e.preventDefault();
-    let title = document.getElementById("title").value;
+    let title = e.target.title.value;
     let hexColor = engineers[engineers.findIndex(engineer => engineer.name === title)].colour;
 
     this.setState({
       events: [...this.state.events,
       {
         id: new Date(),
-        start: moment(document.getElementById("startDate").value).format("L HH:mm:ss"),
-        end: moment(document.getElementById("endDate").value).format("L HH:mm:ss"),
+        start: moment(e.target.startDate.value).format("L HH:mm:ss"),
+        end: moment(e.target.endDate.value).format("L HH:mm:ss"),
         title: title,
         hexColor: hexColor
       }
@@ -112,10 +117,11 @@ class App extends Component {
     document.getElementById("endDate").value = "";
   }
 
-  editEvent = () => {
+  editEvent = (e) => {
+    e.preventDefault();
     let stateEventsCopy = [...this.state.events];
-    stateEventsCopy[editIndex].start = document.getElementById("editStartDate").value
-    stateEventsCopy[editIndex].end = document.getElementById("editEndDate").value
+    stateEventsCopy[editIndex].start = e.target.editStartDate.value;
+    stateEventsCopy[editIndex].end = e.target.editEndDate.value;
 
     this.setState({
       events: stateEventsCopy
@@ -131,6 +137,22 @@ class App extends Component {
       events: stateEventsCopy
     });
     document.getElementById("editEventForm").style.display = "none";
+  }
+
+  saveTeam = (e) => {
+    e.preventDefault();
+    const team = {
+      teamName: e.target.teamName.value,
+      teamTelNum: e.target.teamTelNum.value
+    }
+
+    axios.post('http://localhost:3001/team/', team)
+      .then(reply => console.log(reply))
+      .catch((error) => {
+        console.error(error)
+      })
+
+    document.getElementById("newTeamForm").style.display = "none";
   }
 
   /**
@@ -161,8 +183,8 @@ class App extends Component {
     console.log(JSON.stringify(active));
   }
 
-  openForm = () => {
-    document.getElementById("eventForm").style.display = "flex";
+  openForm = (e) => {
+    document.getElementById(e.target.id).style.display = "flex";
   }
 
   setDate = () => {
@@ -171,9 +193,8 @@ class App extends Component {
     }
   }
 
-  closeForm = () => {
-    document.getElementById("eventForm").style.display = "none";
-    document.getElementById("editEventForm").style.display = "none";
+  closeForm = (e) => {
+    document.getElementById(e.target.id).style.display = "none";
   }
 
   render() {
@@ -187,28 +208,43 @@ class App extends Component {
         </header>
 
         <main className="main">
-          <form className="popupForm" id="eventForm" onSubmit={this.saveEvent}>
-            <h2>Add Entry</h2>
-            <label>Name</label>
-            <EngineerMenu />
-            <label>Start Date</label>
-            <input type="text" id="startDate" onClick={this.setDate} required></input>
-            <p className="inputInfo">Click above and then use mouse to drag select date range</p>
-            <label>End Date</label>
-            <input type="text" id="endDate" required></input>
-            <button type="submit">Save</button>
-            <input type="button" value="Close" onClick={this.closeForm} />
-          </form>
-          <form className="popupForm" id="editEventForm">
-            <h2>Edit Entry</h2>
-            <label>Start Date</label>
-            <input type="text" id="editStartDate"></input>
-            <label>End Date</label>
-            <input type="text" id="editEndDate"></input>
-            <input type="button" value="Save" onClick={this.editEvent} />
-            <input type="button" value="Delete" onClick={this.deleteEvent} />
-            <input type="button" value="Close" onClick={this.closeForm} />
-          </form>
+          <div className="modal" id="eventForm">
+            <form className="popupForm" onSubmit={this.saveEvent}>
+              <h2>Add Entry</h2>
+              <label>Name</label>
+              <EngineerMenu />
+              <label>Start Date</label>
+              <input type="text" id="startDate" onClick={this.setDate} required></input>
+              <p className="inputInfo">Click above and then use mouse to drag select date range</p>
+              <label>End Date</label>
+              <input type="text" id="endDate" required></input>
+              <button type="submit">Save</button>
+              <input type="button" value="Close" onClick={this.closeForm} id="eventForm" />
+            </form>
+          </div>
+          <div className="modal" id="editEventForm">
+            <form className="popupForm" onSubmit={this.editEvent}>
+              <h2>Edit Entry</h2>
+              <label>Start Date</label>
+              <input type="text" id="editStartDate"></input>
+              <label>End Date</label>
+              <input type="text" id="editEndDate"></input>
+              <button type="submit">Save</button>
+              <input type="button" value="Delete" onClick={this.deleteEvent} />
+              <input type="button" value="Close" onClick={this.closeForm} />
+            </form>
+          </div>
+          <div className="modal" id="newTeamForm">
+            <form className="popupForm" onSubmit={this.saveTeam}>
+              <h2>Add New Team</h2>
+              <label>Team Name</label>
+              <input type="text" id="teamName" required></input>
+              <label>Team Tel Num</label>
+              <input type="number" id="teamTelNum" required></input>
+              <button type="submit">Save</button>
+              <input type="button" value="Close" onClick={this.closeForm} id="newTeamForm" />
+            </form>
+          </div>
           <Calendar
             defaultDate={new Date()}
             defaultView="month"
@@ -223,8 +259,9 @@ class App extends Component {
         </main>
 
         <div className="side">
-          <input type="button" value="Add Entry to Calendar" className="addEventButton" onClick={this.openForm} />
+          <input type="button" value="Add Entry to Calendar" className="addEventButton" id="eventForm" onClick={this.openForm} />
           <input type="button" value="Add Engineer to Team" className="addEventButton" />
+          <input type="button" value="Create New Team" className="addEventButton" id="newTeamForm" onClick={this.openForm} />
         </div>
 
       </div>
@@ -236,7 +273,7 @@ function TeamMenu() {
   return (
     <select id="teamSelection">
       <option value="" defaultValue hidden>Choose team</option>
-      {teams.map((team, index) => <option key={index} value={team}>{team}</option>)}
+      {teams.map((team, index) => <option key={index} value={team.teamName}>{team.teamName}</option>)}
     </select>
   );
 }
