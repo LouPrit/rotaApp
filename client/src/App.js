@@ -4,6 +4,12 @@ import moment from 'moment';
 import axios from 'axios';
 import './App.css';
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import helper from './helperFuncs';
+
+import TeamMenu from "./components/TeamMenu";
+import EventForm from './components/EventForm';
+import EditEventForm from './components/EditEventForm';
+import NewTeamForm from './components/NewTeamForm';
 
 /**
  * Sets the locale of our Calendar to en-GB and then makes sure 
@@ -18,28 +24,23 @@ moment.locale('en-gb', {
 
 const localizer = momentLocalizer(moment);
 
-const teams = [{
-  teamName: 'Team 1',
-  teamNum: '07777777777'
-}];
-
 let engineers = [
   {
     name: "Louis Pritchard",
     team: "Team 1",
-    telNum: "07777777777",
+    telNum: "07777777771",
     colour: "ebd534"
   },
   {
     name: "Mike Baker",
     team: "Team 11",
-    telNum: "07777777777",
+    telNum: "07777777772",
     colour: "48c920"
   },
   {
     name: "Richard Fry",
     team: "Team 1",
-    telNum: "07777777777",
+    telNum: "07777777773",
     colour: "29b6d6"
   }
 ];
@@ -61,11 +62,29 @@ class App extends Component {
         }
      */
     this.state = {
-      teamName: "Team 1",
-      events: [
-      ]
+      teams: [], //Populated automatically when component mounts, used for drop down team selection menu
+      engineers: [], //TODO: grab configured engineers for selected team and put them here
+      teamName: "", //TODO: selected team name will go here
+      teamTelNum: "", //TODO: selected team number will go here
+      events: [] //Each event that is created ends up here
     }
     this.getActive = this.getActive.bind(this);
+  }
+
+  componentDidMount() {
+    axios.get('http://localhost:3001/team/') //Retrieves the configured teams to allow them to be displayed in the drop down selector
+    .then(reply => {
+      if (reply.data.length > 0) {
+        this.setState(
+          {
+            teams: reply.data
+          }
+        );
+      } else {
+        console.log("No teams have been configured");
+      }
+    })
+    .catch(error => console.log(error));
   }
 
   /**
@@ -98,8 +117,8 @@ class App extends Component {
 
   saveEvent = (e) => {
     e.preventDefault();
-    let title = e.target.title.value;
-    let hexColor = engineers[engineers.findIndex(engineer => engineer.name === title)].colour;
+    const title = e.target.title.value; //Engineer name
+    const engIndex = engineers.findIndex(engineer => engineer.name === title);
 
     this.setState({
       events: [...this.state.events,
@@ -108,7 +127,8 @@ class App extends Component {
         start: moment(e.target.startDate.value).format("L HH:mm:ss"),
         end: moment(e.target.endDate.value).format("L HH:mm:ss"),
         title: title,
-        hexColor: hexColor
+        telNum: engineers[engIndex].telNum,
+        hexColor: engineers[engIndex].colour
       }
       ]
     });
@@ -139,22 +159,6 @@ class App extends Component {
     document.getElementById("editEventForm").style.display = "none";
   }
 
-  saveTeam = (e) => {
-    e.preventDefault();
-    const team = {
-      teamName: e.target.teamName.value,
-      teamTelNum: e.target.teamTelNum.value
-    }
-
-    axios.post('http://localhost:3001/team/', team)
-      .then(reply => console.log(reply))
-      .catch((error) => {
-        console.error(error)
-      })
-
-    document.getElementById("newTeamForm").style.display = "none";
-  }
-
   /**
    * 'eventStyleGetter' is how we style each of our individual events on the calendar
    * the 'hexColor' is taken from the event and added to a style object which is then returned to the Calendar component.
@@ -183,18 +187,10 @@ class App extends Component {
     console.log(JSON.stringify(active));
   }
 
-  openForm = (e) => {
-    document.getElementById(e.target.id).style.display = "flex";
-  }
-
   setDate = () => {
     if (document.getElementById("startDate").value === "") {
       document.getElementById("eventForm").style.display = "none";
     }
-  }
-
-  closeForm = (e) => {
-    document.getElementById(e.target.id).style.display = "none";
   }
 
   render() {
@@ -202,48 +198,20 @@ class App extends Component {
       <div className="App">
         <header className="header">
           <div className="teamSelector">
-            <TeamMenu />
+            <TeamMenu teams={this.state.teams}/>
             <input type="button" value="Get Rota" />
           </div>
         </header>
 
         <main className="main">
           <div className="modal" id="eventForm">
-            <form className="popupForm" onSubmit={this.saveEvent}>
-              <h2>Add Entry</h2>
-              <label>Name</label>
-              <EngineerMenu />
-              <label>Start Date</label>
-              <input type="text" id="startDate" onClick={this.setDate} required></input>
-              <p className="inputInfo">Click above and then use mouse to drag select date range</p>
-              <label>End Date</label>
-              <input type="text" id="endDate" required></input>
-              <button type="submit">Save</button>
-              <input type="button" value="Close" onClick={this.closeForm} id="eventForm" />
-            </form>
+            <EventForm engineers={engineers} saveEvent={this.saveEvent} setDate={this.setDate} closeForm={helper.closeForm}/>
           </div>
           <div className="modal" id="editEventForm">
-            <form className="popupForm" onSubmit={this.editEvent}>
-              <h2>Edit Entry</h2>
-              <label>Start Date</label>
-              <input type="text" id="editStartDate"></input>
-              <label>End Date</label>
-              <input type="text" id="editEndDate"></input>
-              <button type="submit">Save</button>
-              <input type="button" value="Delete" onClick={this.deleteEvent} />
-              <input type="button" value="Close" onClick={this.closeForm} />
-            </form>
+            <EditEventForm editEvent={this.editEvent} deleteEvent={this.deleteEvent} closeForm={helper.closeForm}/>
           </div>
           <div className="modal" id="newTeamForm">
-            <form className="popupForm" onSubmit={this.saveTeam}>
-              <h2>Add New Team</h2>
-              <label>Team Name</label>
-              <input type="text" id="teamName" required></input>
-              <label>Team Tel Num</label>
-              <input type="number" id="teamTelNum" required></input>
-              <button type="submit">Save</button>
-              <input type="button" value="Close" onClick={this.closeForm} id="newTeamForm" />
-            </form>
+            <NewTeamForm closeForm={helper.closeForm}/>
           </div>
           <Calendar
             defaultDate={new Date()}
@@ -259,32 +227,13 @@ class App extends Component {
         </main>
 
         <div className="side">
-          <input type="button" value="Add Entry to Calendar" className="addEventButton" id="eventForm" onClick={this.openForm} />
+          <input type="button" value="Add Entry to Calendar" className="addEventButton" id="eventForm" onClick={helper.openForm} />
           <input type="button" value="Add Engineer to Team" className="addEventButton" />
-          <input type="button" value="Create New Team" className="addEventButton" id="newTeamForm" onClick={this.openForm} />
+          <input type="button" value="Create New Team" className="addEventButton" id="newTeamForm" onClick={helper.openForm} />
         </div>
-
       </div>
     );
   }
-}
-
-function TeamMenu() {
-  return (
-    <select id="teamSelection">
-      <option value="" defaultValue hidden>Choose team</option>
-      {teams.map((team, index) => <option key={index} value={team.teamName}>{team.teamName}</option>)}
-    </select>
-  );
-}
-
-function EngineerMenu() {
-  return (
-    <select id="title">
-      <option value="" defaultValue hidden>Choose engineer</option>
-      {engineers.map((item, index) => <option key={index} value={item.name}>{item.name}</option>)}
-    </select>
-  );
 }
 
 export default App;

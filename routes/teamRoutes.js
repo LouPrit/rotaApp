@@ -7,4 +7,6 @@ const teamController = require('../controllers/teamController');
  */
 router.post("/", teamController.newTeam);
 
+router.get("/", teamController.getTeams);
+
 module.exports = router;
