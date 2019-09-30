@@ -45,7 +45,7 @@ body {
 }
 
 .addEventButton {
-  background-color: #555;
+  background-color: green;
   color: white;
   width: 90%;
   height: 10%;
@@ -98,5 +98,9 @@ h2 {
   margin: 0;
   font-size: 11px;
   color: grey;
+}
+
+.teamSelector {
+  display: flex;
 }
 

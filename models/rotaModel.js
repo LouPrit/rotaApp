@@ -18,6 +18,7 @@ mongoose.set('useCreateIndex', true); //For the Schema to keep our id unique (in
 */
 const rotaSchema = new Schema({
     teamName: { type: String, required: true, index: { unique: true } },
+    teamTelNum: { type: String, required: true },
     events: [{
         id: { type: String, required: true, index: { unique: true } },
         start: { type: String, required: true },

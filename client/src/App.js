@@ -22,6 +22,7 @@ moment.locale('en-gb', {
   },
 });
 
+const server = 'http://localhost:3001/';
 const localizer = momentLocalizer(moment);
 
 let engineers = [
@@ -64,27 +65,27 @@ class App extends Component {
     this.state = {
       teams: [], //Populated automatically when component mounts, used for drop down team selection menu
       engineers: [], //TODO: grab configured engineers for selected team and put them here
-      teamName: "", //TODO: selected team name will go here
-      teamTelNum: "", //TODO: selected team number will go here
+      teamName: "", //Populated when user clicks 'Get Rota' button
+      teamTelNum: "", //Populated when user clicks 'Get Rota' button
       events: [] //Each event that is created ends up here
     }
     this.getActive = this.getActive.bind(this);
   }
 
   componentDidMount() {
-    axios.get('http://localhost:3001/team/') //Retrieves the configured teams to allow them to be displayed in the drop down selector
-    .then(reply => {
-      if (reply.data.length > 0) {
-        this.setState(
-          {
-            teams: reply.data
-          }
-        );
-      } else {
-        console.log("No teams have been configured");
-      }
-    })
-    .catch(error => console.log(error));
+    axios.get(`${server}team/`) //Retrieves the configured teams to allow them to be displayed in the drop down selector
+      .then(reply => {
+        if (reply.data.length > 0) {
+          this.setState(
+            {
+              teams: reply.data
+            }
+          );
+        } else {
+          console.log("No teams have been configured");
+        }
+      })
+      .catch(error => console.log(error));
   }
 
   /**
@@ -117,24 +118,29 @@ class App extends Component {
 
   saveEvent = (e) => {
     e.preventDefault();
-    const title = e.target.title.value; //Engineer name
-    const engIndex = engineers.findIndex(engineer => engineer.name === title);
+    if (this.state.teamName) {
+      const title = e.target.title.value; //Engineer name
+      const engIndex = engineers.findIndex(engineer => engineer.name === title);
 
-    this.setState({
-      events: [...this.state.events,
-      {
-        id: new Date(),
-        start: moment(e.target.startDate.value).format("L HH:mm:ss"),
-        end: moment(e.target.endDate.value).format("L HH:mm:ss"),
-        title: title,
-        telNum: engineers[engIndex].telNum,
-        hexColor: engineers[engIndex].colour
-      }
-      ]
-    });
-    document.getElementById("eventForm").style.display = "none";
-    document.getElementById("startDate").value = "";
-    document.getElementById("endDate").value = "";
+      this.setState({
+        events: [...this.state.events,
+        {
+          id: new Date(),
+          start: moment(e.target.startDate.value).format("L HH:mm:ss"),
+          end: moment(e.target.endDate.value).format("L HH:mm:ss"),
+          title: title,
+          telNum: engineers[engIndex].telNum,
+          hexColor: engineers[engIndex].colour
+        }
+        ]
+      });
+      document.getElementById("eventForm").style.display = "none";
+      document.getElementById("startDate").value = "";
+      document.getElementById("endDate").value = "";
+    } else {
+      document.getElementById("eventForm").style.display = "none";
+      alert("Please select a team and then click 'Get Rota' first");
+    }
   }
 
   editEvent = (e) => {
@@ -187,6 +193,49 @@ class App extends Component {
     console.log(JSON.stringify(active));
   }
 
+  saveRota = () => {
+    if (this.state.teamName) {
+      const rotaObject = {
+        teamName: this.state.teamName,
+        teamTelNum: this.state.teamTelNum,
+        events: this.state.events
+      };
+
+      axios.post(`${server}rota/`, rotaObject)
+        .then(alert(`Rota saved successfully`))
+        .catch(error => console.log(error));
+    } else {
+      alert("Please select a team and then click 'Get Rota' first");
+    }
+  }
+
+  getRota = (e) => {
+    e.preventDefault();
+    const teamName = e.target.teamSelection.value;
+    if (teamName) {
+      const teamNum = this.state.teams[this.state.teams.findIndex(team => team.teamName === teamName)].teamTelNum;
+
+      axios.get(`${server}rota/${teamName}`)
+        .then(reply => {
+          if (reply.data.length > 0) {
+            this.setState({
+              teamName: teamName,
+              teamTelNum: teamNum,
+              events: reply.data[0].events
+            });
+          } else {
+            this.setState({
+              teamName: teamName,
+              teamTelNum: teamNum
+            }, alert(`No Rota found for ${teamName}, please now add entries to the calendar`));
+          }
+        })
+        .catch(error => console.log(error));
+    } else {
+      alert("Please select a team first");
+    }
+  }
+
   setDate = () => {
     if (document.getElementById("startDate").value === "") {
       document.getElementById("eventForm").style.display = "none";
@@ -198,20 +247,20 @@ class App extends Component {
       <div className="App">
         <header className="header">
           <div className="teamSelector">
-            <TeamMenu teams={this.state.teams}/>
-            <input type="button" value="Get Rota" />
+            <TeamMenu teams={this.state.teams} getRota={this.getRota} />
+            <input type="button" value="Save Rota" onClick={this.saveRota} />
           </div>
         </header>
 
         <main className="main">
           <div className="modal" id="eventForm">
-            <EventForm engineers={engineers} saveEvent={this.saveEvent} setDate={this.setDate} closeForm={helper.closeForm}/>
+            <EventForm engineers={engineers} saveEvent={this.saveEvent} setDate={this.setDate} closeForm={helper.closeForm} />
           </div>
           <div className="modal" id="editEventForm">
-            <EditEventForm editEvent={this.editEvent} deleteEvent={this.deleteEvent} closeForm={helper.closeForm}/>
+            <EditEventForm editEvent={this.editEvent} deleteEvent={this.deleteEvent} closeForm={helper.closeForm} />
           </div>
           <div className="modal" id="newTeamForm">
-            <NewTeamForm closeForm={helper.closeForm}/>
+            <NewTeamForm closeForm={helper.closeForm} />
           </div>
           <Calendar
             defaultDate={new Date()}

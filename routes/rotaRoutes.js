@@ -3,8 +3,10 @@ const router = express.Router();
 const rotaController = require('../controllers/rotaController');
 
 /**
- * Handles GET requests to /rota/ 
+ * Handles POST requests to /rota/ for saving a rota
  */
-router.get("/", rotaController.getActive);
+router.post("/", rotaController.saveRota);
+
+router.get("/:teamName", rotaController.getRota);
 
 module.exports = router;
