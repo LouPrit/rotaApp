@@ -5,7 +5,7 @@ function EngineerMenu(props) {
   return (
     <select id="title">
       <option value="" defaultValue hidden>Choose engineer</option>
-      {engineers.map((item, index) => <option key={index} value={item.name}>{item.name}</option>)}
+      {engineers.map((item, index) => <option key={index} value={item.engineerName}>{item.engineerName}</option>)}
     </select>
   );
 }

@@ -10,6 +10,7 @@ import TeamMenu from "./components/TeamMenu";
 import EventForm from './components/EventForm';
 import EditEventForm from './components/EditEventForm';
 import NewTeamForm from './components/NewTeamForm';
+import NewEngineerForm from './components/NewEngineerForm';
 
 /**
  * Sets the locale of our Calendar to en-GB and then makes sure 
@@ -24,27 +25,6 @@ moment.locale('en-gb', {
 
 const server = 'http://localhost:3001/';
 const localizer = momentLocalizer(moment);
-
-let engineers = [
-  {
-    name: "Louis Pritchard",
-    team: "Team 1",
-    telNum: "07777777771",
-    colour: "ebd534"
-  },
-  {
-    name: "Mike Baker",
-    team: "Team 11",
-    telNum: "07777777772",
-    colour: "48c920"
-  },
-  {
-    name: "Richard Fry",
-    team: "Team 1",
-    telNum: "07777777773",
-    colour: "29b6d6"
-  }
-];
 
 let editIndex; //A value is assigned to this when a user clicks an event, we then use this value to know which event the user wants to edit 
 
@@ -69,7 +49,6 @@ class App extends Component {
       teamTelNum: "", //Populated when user clicks 'Get Rota' button
       events: [] //Each event that is created ends up here
     }
-    this.getActive = this.getActive.bind(this);
   }
 
   componentDidMount() {
@@ -120,7 +99,7 @@ class App extends Component {
     e.preventDefault();
     if (this.state.teamName) {
       const title = e.target.title.value; //Engineer name
-      const engIndex = engineers.findIndex(engineer => engineer.name === title);
+      const engIndex = this.state.engineers.findIndex(engineer => engineer.engineerName === title);
 
       this.setState({
         events: [...this.state.events,
@@ -129,8 +108,8 @@ class App extends Component {
           start: moment(e.target.startDate.value).format("L HH:mm:ss"),
           end: moment(e.target.endDate.value).format("L HH:mm:ss"),
           title: title,
-          telNum: engineers[engIndex].telNum,
-          hexColor: engineers[engIndex].colour
+          telNum: this.state.engineers[engIndex].engineerTelNum,
+          hexColor: this.state.engineers[engIndex].colour
         }
         ]
       });
@@ -181,18 +160,6 @@ class App extends Component {
     };
   }
 
-  getActive = () => {
-    let active = this.state.events.filter(event => {
-      let today = moment(new Date()).format("L HH:mm:ss");
-      if (today > event.start && today < event.end) {
-        return event;
-      } else {
-        return false;
-      }
-    });
-    console.log(JSON.stringify(active));
-  }
-
   saveRota = () => {
     if (this.state.teamName) {
       const rotaObject = {
@@ -217,16 +184,18 @@ class App extends Component {
 
       axios.get(`${server}rota/${teamName}`)
         .then(reply => {
-          if (reply.data.length > 0) {
+          if (reply.data.rota.length > 0) {
             this.setState({
               teamName: teamName,
               teamTelNum: teamNum,
-              events: reply.data[0].events
+              events: reply.data.rota[0].events,
+              engineers: reply.data.engineers
             });
           } else {
             this.setState({
               teamName: teamName,
-              teamTelNum: teamNum
+              teamTelNum: teamNum,
+              engineers: reply.data.engineers
             }, alert(`No Rota found for ${teamName}, please now add entries to the calendar`));
           }
         })
@@ -254,13 +223,16 @@ class App extends Component {
 
         <main className="main">
           <div className="modal" id="eventForm">
-            <EventForm engineers={engineers} saveEvent={this.saveEvent} setDate={this.setDate} closeForm={helper.closeForm} />
+            <EventForm engineers={this.state.engineers} saveEvent={this.saveEvent} setDate={this.setDate} closeForm={helper.closeForm} />
           </div>
           <div className="modal" id="editEventForm">
             <EditEventForm editEvent={this.editEvent} deleteEvent={this.deleteEvent} closeForm={helper.closeForm} />
           </div>
           <div className="modal" id="newTeamForm">
             <NewTeamForm closeForm={helper.closeForm} />
+          </div>
+          <div className="modal" id="newEngineerForm">
+            <NewEngineerForm closeForm={helper.closeForm} teamName={this.state.teamName} />
           </div>
           <Calendar
             defaultDate={new Date()}
@@ -277,7 +249,7 @@ class App extends Component {
 
         <div className="side">
           <input type="button" value="Add Entry to Calendar" className="addEventButton" id="eventForm" onClick={helper.openForm} />
-          <input type="button" value="Add Engineer to Team" className="addEventButton" />
+          <input type="button" value="Add Engineer to Team" className="addEventButton" id="newEngineerForm" onClick={helper.openForm} />
           <input type="button" value="Create New Team" className="addEventButton" id="newTeamForm" onClick={helper.openForm} />
         </div>
       </div>

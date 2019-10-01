@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const rotaRoutes = require('./routes/rotaRoutes'); 
 const teamRoutes = require('./routes/teamRoutes'); 
+const engineerRoutes = require('./routes/engineerRoutes'); 
 
 const app = express();
 const PORT = 3001;
@@ -13,6 +14,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.use('/rota', rotaRoutes); //Use our rota routes
 app.use('/team', teamRoutes); //Use our rota routes
+app.use('/engineer', engineerRoutes); //Use our rota routes
 
 /**
  * Our error handler middleware, errors processed using 'next' are sent to here.
