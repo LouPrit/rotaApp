@@ -217,7 +217,7 @@ class App extends Component {
         <header className="header">
           <div className="teamSelector">
             <TeamMenu teams={this.state.teams} getRota={this.getRota} />
-            <input type="button" value="Save Rota" onClick={this.saveRota} />
+            <input type="button" value="Save Rota" id="saveRota" onClick={this.saveRota} />
           </div>
         </header>
 
@@ -248,9 +248,9 @@ class App extends Component {
         </main>
 
         <div className="side">
-          <input type="button" value="Add Entry to Calendar" className="addEventButton" id="eventForm" onClick={helper.openForm} />
-          <input type="button" value="Add Engineer to Team" className="addEventButton" id="newEngineerForm" onClick={helper.openForm} />
-          <input type="button" value="Create New Team" className="addEventButton" id="newTeamForm" onClick={helper.openForm} />
+          <input type="button" value="Add Entry to Calendar" className="addEventButton" id="eventForm" onClick={helper.openForm} teamname={this.state.teamName} />
+          <input type="button" value="Add Engineer to Team" className="addEventButton" id="newEngineerForm" onClick={helper.openForm} teamname={this.state.teamName} />
+          <input type="button" value="Create New Team" className="addEventButton" id="newTeamForm" teamname="PLACEHOLDER" onClick={helper.openForm} />
         </div>
       </div>
     );
