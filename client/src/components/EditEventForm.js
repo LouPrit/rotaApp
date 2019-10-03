@@ -8,9 +8,9 @@ function EditEventForm(props) {
                 <input type="text" id="editStartDate"></input>
                 <label>End Date</label>
                 <input type="text" id="editEndDate"></input>
-                <button type="submit">Save</button>
-                <input type="button" value="Delete" onClick={props.deleteEvent} />
-                <input type="button" value="Close" id="editEventForm" onClick={props.closeForm} />
+                <button type="submit" className="formButtons">Save</button>
+                <input type="button" value="Delete" className="formButtons" onClick={props.deleteEvent} />
+                <input type="button" value="Close" className="formButtons" id="editEventForm" onClick={props.closeForm} />
             </form>
     );
 }

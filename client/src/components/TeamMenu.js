@@ -8,7 +8,7 @@ function TeamMenu(props) {
         <option value="" defaultValue hidden>Choose team</option>
         {teams.map((team, index) => <option key={index} value={team.teamName}>{team.teamName}</option>)}
       </select>
-      <button type="submit" id="getRota">Get Rota</button>
+      <button type="submit" id="getRota" className="formButtons">Get Rota</button>
       </form>
     );
   }

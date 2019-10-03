@@ -13,8 +13,8 @@ function EventForm(props) {
             <p className="inputInfo">Click above and then use mouse to drag select date range</p>
             <label>End Date</label>
             <input type="text" id="endDate" required></input>
-            <button type="submit">Save</button>
-            <input type="button" value="Close" onClick={props.closeForm} id="eventForm" />
+            <button type="submit" className="formButtons">Save</button>
+            <input type="button" value="Close" className="formButtons" onClick={props.closeForm} id="eventForm" />
         </form>
     );
 }

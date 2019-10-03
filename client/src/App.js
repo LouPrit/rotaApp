@@ -217,7 +217,7 @@ class App extends Component {
         <header className="header">
           <div className="teamSelector">
             <TeamMenu teams={this.state.teams} getRota={this.getRota} />
-            <input type="button" value="Save Rota" id="saveRota" onClick={this.saveRota} />
+            <input type="button" value="Save Rota" id="formButtons" onClick={this.saveRota} />
           </div>
         </header>
 

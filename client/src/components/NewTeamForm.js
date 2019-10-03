@@ -32,8 +32,8 @@ function NewTeamForm(props) {
         <input type="text" id="teamName" required></input>
         <label>Team Tel Num</label>
         <input type="number" id="teamTelNum" required></input>
-        <button type="submit">Save</button>
-        <input type="button" value="Close" onClick={props.closeForm} id="newTeamForm" />
+        <button type="submit" className="formButtons">Save</button>
+        <input type="button" value="Close" className="formButtons" onClick={props.closeForm} id="newTeamForm" />
       </form>
     );
   }

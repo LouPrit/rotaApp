@@ -45,8 +45,8 @@ function NewEngineerForm(props) {
       <input type="number" id="engineerTelNum" required></input>
       <label>Colour</label>
       <input type="text" id="engineerColour" required></input>
-      <button type="submit">Save</button>
-      <input type="button" value="Close" onClick={props.closeForm} id="newEngineerForm" />
+      <button type="submit" className="formButtons">Save</button>
+      <input type="button" value="Close" className="formButtons" onClick={props.closeForm} id="newEngineerForm" />
     </form>
   );
 }

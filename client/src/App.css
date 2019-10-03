@@ -11,8 +11,8 @@ body {
 .App {
 	display: grid;
 	height: 100vh;
-	width: 100vw;
-	grid-gap: 10px;
+  width: 100vw;
+  grid-gap: 2px;
   grid-template-rows: auto 1fr;
   grid-template-columns: 110px 1fr;
   grid-template-areas: 
@@ -42,9 +42,8 @@ body {
   background-color:  #00A8E1;
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   color: white;
-  width: 90%;
   height: 10%;
-  margin-top: 5px;
+  margin: 1px;
   border: solid;
   border-radius: 10px;
   cursor: pointer;
@@ -73,12 +72,12 @@ body {
   flex-direction: column;
   position: fixed;
   width: 300px;
-  height: 250px;
+  height: auto;
   top: 50%;
   left: 50%;
+  padding: 3px;
   margin-top: -150px; 
   margin-left: -125px; 
-  border: 3px solid;
   justify-content: center;
   z-index: 100;
   background-color: white;
@@ -89,7 +88,7 @@ label {
 }
 
 h2 {
-  margin: auto;
+  margin: 5px auto 5px auto;
 }
 
 .inputInfo {
@@ -103,7 +102,7 @@ h2 {
   display: flex;
 }
 
-#getRota, #saveRota {
+#formButtons, .formButtons {
   background-color:  #00A8E1;
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   color: white;
@@ -113,6 +112,6 @@ h2 {
   white-space: normal;
 }
 
-#getRota:hover, #saveRota:hover {
+#formButtons:hover, .formButtons:hover {
   background-color:  #b0afae;
 }
