@@ -21,11 +21,11 @@ const rotaSchema = new Schema({
     teamTelNum: { type: String, required: true },
     events: [{
         id: { type: String, required: true, index: { unique: true } },
-        start: { type: String, required: true },
-        end: { type: String, required: true },
-        title: { type: String, required: true },
+        startDate: { type: String, required: true },
+        endDate: { type: String, required: true },
+        name: { type: String, required: true },
         telNum: { type: String, required: true },
-        hexColor: { type: String, required: true }
+        color: { type: String, required: true }
     }]
 });
 

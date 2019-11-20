@@ -38,20 +38,24 @@ exports.getActive = (req, res, next) => {
         if (err) return next(err);
         if (rota.length > 0) {
             let active = rota[0].events.filter(event => {
-                let today = moment(new Date()).format("L HH:mm:ss");
-                if (today > event.start && today < event.end) {
+                let today = moment(new Date());
+                if (today > moment(event.startDate) && today < moment(event.endDate)) {
                     return event;
                 } else {
                     return false;
                 }
             });
 
-            let engDetails = {
-                engineerName: active[0].title,
-                engineerTelNum: active[0].telNum,
-                teamTelNum: rota[0].teamTelNum
+            if (active.length > 0) {
+                let engDetails = {
+                    engineerName: active[0].name,
+                    engineerTelNum: active[0].telNum,
+                    teamTelNum: rota[0].teamTelNum
+                }
+                res.status(200).send(engDetails);
+            } else {
+                res.status(404).send("No active on-call engineer found for today.");
             }
-            res.status(200).send(engDetails);
 
         } else {
             res.status(404).send("No Rota Found");

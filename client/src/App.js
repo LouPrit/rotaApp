@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import axios from 'axios';
 import './App.css';
-import "react-big-calendar/lib/css/react-big-calendar.css";
 import helper from './helperFuncs';
+import Calendar from 'rc-year-calendar';
 
 import TeamMenu from "./components/TeamMenu";
 import EventForm from './components/EventForm';
@@ -12,19 +11,7 @@ import EditEventForm from './components/EditEventForm';
 import NewTeamForm from './components/NewTeamForm';
 import NewEngineerForm from './components/NewEngineerForm';
 
-/**
- * Sets the locale of our Calendar to en-GB and then makes sure 
- * our calendar starts each week with Monday rather than Sunday
- */
-moment.locale('en-gb', {
-  week: {
-    dow: 1,
-    doy: 1,
-  },
-});
-
 const server = 'http://localhost:3001/';
-const localizer = momentLocalizer(moment);
 
 let editIndex; //A value is assigned to this when a user clicks an event, we then use this value to know which event the user wants to edit 
 
@@ -36,10 +23,10 @@ class App extends Component {
      * The state holds an array of our event objects which look something like:
         {
          id:"2019-09-19T09:01:59.402Z",
-         start:"09/02/2019 00:00:00",
-         end:"09/08/2019 23:59:59",
-         title:"Test",
-         hexColor:"40f5d7"
+         startDate:"09/02/2019 00:00:00",
+         endDate:"09/08/2019 23:59:59",
+         name:"Test",
+         color:"40f5d7"
         }
      */
     this.state = {
@@ -72,25 +59,26 @@ class App extends Component {
    * inside the state 'events' array and assigns it to 'editIndex' variable for future use.
    * It then displays the start / end date of the event the user clicked inside the input fields of the edit event form.
    */
-  onSelectEvent = ({ start, end, id }) => {
-    editIndex = this.state.events.findIndex(event => event.id === id); //This is so we can edit the correct event inside the state 'events' array 
-    document.getElementById("editStartDate").value = start;
-    document.getElementById("editEndDate").value = end;
+  onSelectEvent = ({ date, events }) => {
+    editIndex = this.state.events.findIndex(event => event.id === events[0].id); //This is so we can edit the correct event inside the state 'events' array 
+    document.getElementById("editStartDate").value = moment(this.state.events[editIndex].startDate).format("L HH:mm:ss");
+    document.getElementById("editEndDate").value = moment(this.state.events[editIndex].endDate).format("L HH:mm:ss");
 
     document.getElementById("editEventForm").style.display = "flex";
+    console.log(editIndex);
   }
 
   /**
    * This is fired when a user selects a date range by dragging the mouse across the calendar,
    * it will populate the 'event form' with the date range the user selected.
    */
-  onSelectSlot = ({ start, end }) => {
+  onSelectSlot = ({ startDate, endDate }) => {
     if (document.getElementById("title").value !== "") { //Prevents the 'add event' form from displaying if no 'name' has been typed into form
-      let startDate = document.getElementById("startDate");
-      let endDate = document.getElementById("endDate");
+      let startDatez = document.getElementById("startDate");
+      let endDatez = document.getElementById("endDate");
 
-      startDate.value = moment(start).format("L HH:mm:ss");
-      endDate.value = moment(end).add(23.9999, 'hours').format("L HH:mm:ss");
+      startDatez.value = moment(startDate).format("L HH:mm:ss");
+      endDatez.value = moment(endDate).add(23.9999, 'hours').format("L HH:mm:ss");
       document.getElementById("eventForm").style.display = "flex";
     }
   }
@@ -105,11 +93,11 @@ class App extends Component {
         events: [...this.state.events,
         {
           id: new Date(),
-          start: moment(e.target.startDate.value).format("L HH:mm:ss"),
-          end: moment(e.target.endDate.value).format("L HH:mm:ss"),
-          title: title,
+          startDate: moment(e.target.startDate.value),
+          endDate: moment(e.target.endDate.value),
+          name: title,
           telNum: this.state.engineers[engIndex].engineerTelNum,
-          hexColor: this.state.engineers[engIndex].colour
+          color: this.state.engineers[engIndex].colour
         }
         ]
       });
@@ -125,8 +113,10 @@ class App extends Component {
   editEvent = (e) => {
     e.preventDefault();
     let stateEventsCopy = [...this.state.events];
-    stateEventsCopy[editIndex].start = e.target.editStartDate.value;
-    stateEventsCopy[editIndex].end = e.target.editEndDate.value;
+    console.log(JSON.stringify(stateEventsCopy));
+    stateEventsCopy[editIndex].startDate = moment(e.target.editStartDate.value);
+    stateEventsCopy[editIndex].endDate = moment(e.target.editEndDate.value);
+    console.log(JSON.stringify(stateEventsCopy));
 
     this.setState({
       events: stateEventsCopy
@@ -142,22 +132,6 @@ class App extends Component {
       events: stateEventsCopy
     });
     document.getElementById("editEventForm").style.display = "none";
-  }
-
-  /**
-   * 'eventStyleGetter' is how we style each of our individual events on the calendar
-   * the 'hexColor' is taken from the event and added to a style object which is then returned to the Calendar component.
-   */
-  eventStyleGetter = ({ hexColor }) => {
-    var backgroundColor = '#' + hexColor;
-    var style = {
-      backgroundColor: backgroundColor,
-      color: 'black',
-      fontSize: '25px'
-    };
-    return {
-      style: style
-    };
   }
 
   saveRota = () => {
@@ -185,10 +159,17 @@ class App extends Component {
       axios.get(`${server}rota/${teamName}`)
         .then(reply => {
           if (reply.data.rota.length > 0) {
+            let newArray = reply.data.rota[0].events.map(event => ({
+              id: event.id,
+              startDate: moment(event.startDate),
+              endDate: moment(event.endDate),
+              name: event.name,
+              color: event.color
+            }));
             this.setState({
               teamName: teamName,
               teamTelNum: teamNum,
-              events: reply.data.rota[0].events,
+              events: newArray,
               engineers: reply.data.engineers
             });
           } else {
@@ -235,15 +216,15 @@ class App extends Component {
             <NewEngineerForm closeForm={helper.closeForm} teamName={this.state.teamName} />
           </div>
           <Calendar
-            defaultDate={new Date()}
-            defaultView="month"
-            events={this.state.events}
-            localizer={localizer}
-            views={['month']}
-            onSelectEvent={this.onSelectEvent}
-            selectable
-            onSelectSlot={this.onSelectSlot}
-            eventPropGetter={(this.eventStyleGetter)}
+            enableContextMenu={true}
+            enableRangeSelection={true}
+            allowOverlap={false}
+            contextMenuItems={[
+              { text: "Close" }
+            ]}
+            onDayClick={this.onSelectEvent}
+            onRangeSelected={this.onSelectSlot}
+            dataSource={this.state.events}
           />
         </main>
 
